@@ -284,14 +284,30 @@ class CountryCodePickerState extends State<CountryCodePicker> {
       selectedItem = elements[0];
     }
 
+    final favoriteSet = widget.favorite.map((e) => e.toUpperCase()).toSet();
+    final favoriteIndexMap = {
+      for (var i = 0; i < widget.favorite.length; i++)
+        widget.favorite[i].toUpperCase(): i
+    };
+
     favoriteElements = elements
         .where((item) =>
-            widget.favorite.firstWhereOrNull((criteria) =>
-                item.code!.toUpperCase() == criteria.toUpperCase() ||
-                item.dialCode == criteria ||
-                item.name!.toUpperCase() == criteria.toUpperCase()) !=
-            null)
+            favoriteSet.contains(item.code!.toUpperCase()) ||
+            favoriteSet.contains(item.dialCode) ||
+            favoriteSet.contains(item.name!.toUpperCase()))
         .toList();
+
+    favoriteElements.sort((a, b) {
+      int indexA = favoriteIndexMap[a.code!.toUpperCase()] ??
+          favoriteIndexMap[a.dialCode] ??
+          favoriteIndexMap[a.name!.toUpperCase()] ??
+          -1;
+      int indexB = favoriteIndexMap[b.code!.toUpperCase()] ??
+          favoriteIndexMap[b.dialCode] ??
+          favoriteIndexMap[b.name!.toUpperCase()] ??
+          -1;
+      return indexA.compareTo(indexB);
+    });
   }
 
   void showCountryCodePickerDialog() async {
